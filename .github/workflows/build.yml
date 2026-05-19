@@ -1,12 +1,18 @@
-name: Build ExtremeKernel-N 9820
+name: Build ExtremeKernel-N 9820 
 
 on:
   workflow_dispatch:
+    inputs:      
+      tag:
+        description: 'Release Tag'
+        required: true        
 
 jobs:
   build:
     runs-on: ubuntu-24.04
-
+    permissions:
+      contents: write
+      
     strategy:
       fail-fast: false
       matrix:
@@ -47,5 +53,26 @@ jobs:
       - name: Upload artifact (${{ matrix.target }})
         uses: actions/upload-artifact@v4
         with:
-          name: kernel-${{ matrix.target }}
+          name: ExtremeKernel-${{ matrix.target }}-${{ github.event.inputs.tag }}
           path: build/out/${{ matrix.target }}/*.zip
+  release:
+    needs: build 
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write 
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.event.inputs.tag }}
+          name: "ExtremeKernel-N 9820 - ${{ github.event.inputs.tag }}"
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }} 
+          artifacts: "artifacts/**/*.zip"
+          body: "Official Release for ExtremeKernel-N 9820.\nCommit SHA: ${{ github.sha }}\nSupported Devices: S10e (beyond0lte), S10 (beyond1lte), S10+ (beyond2lte), S10 5G (beyondx)"
