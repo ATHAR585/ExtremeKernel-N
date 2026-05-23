@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:      
       tag:
-        description: 'Release Tag'
+        description: 'Release Tag (OneUI7-9820/9825)'
         required: true        
 
 jobs:
